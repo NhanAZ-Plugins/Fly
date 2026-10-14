@@ -1,71 +1,95 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fly;
 
-use pocketmine\Server;
-use pocketmine\plugin\PluginBase;
-use pocketmine\event\Listener;
-use pocketmine\utils\TextFormat;
-use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\Player;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\CommandExecutor;
-use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\player\Player;
+use pocketmine\plugin\PluginBase;
+use pocketmine\utils\TextFormat;
 
-class Main extends PluginBase implements Listener {
+final class Main extends PluginBase implements Listener{
+	private FlightRegistry $flightRegistry;
 
-    public $players = array();
+	/** @var array<string, Player> */
+	private array $players = [];
 
-     public function onEnable() {
-        $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->getLogger()->info(TextFormat::GREEN . "Plugin Fly v2 Chỉnh Sửa Và Việt Hóa Bởi Ghast Noob");
-     }
+	protected function onEnable() : void{
+		$this->flightRegistry = new FlightRegistry();
+		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+		$this->getLogger()->info(TextFormat::GREEN . "Plugin Fly v2 enabled");
+	}
 
-     public function onDisable() {
-        $this->getLogger()->info(TextFormat::RED . "Plugin Fly v2 Chỉnh Sửa Và Việt Hóa Bởi Ghast Noob");
-     }
-   
-     public function onEntityDamage(EntityDamageEvent $event) {
-        if($event instanceof EntityDamageByEntityEvent) {
-        $damager = $event->getDamager();
-           if($damager instanceof Player && $this->isPlayer($damager)) {
-              $damager->sendTip(TextFormat::RED . "§e༺§l§bＦＬＹ§r§e༻§l§c Vui Lòng Tắt Fly Để PvP. Cám Ơn!");
-              $event->setCancelled(true);
-           }
-        }
-     }
-     
-    public function onCommand(CommandSender $sender, Command $cmd, $label,array $args) {
-        if(strtolower($cmd->getName()) == "fly") {
-            if($sender instanceof Player) {
-                if($this->isPlayer($sender)) {
-                    $this->removePlayer($sender);
-                    $sender->setAllowFlight(true);
-                    $sender->sendMessage(TextFormat::YELLOW . "§e༺§l§bＦＬＹ§r§e༻§c§l Chế Độ Fly Đã Vô Hiệu Hóa");
-                    return true;
-                }
-                else{
-                    $this->addPlayer($sender);
-                    $sender->setAllowFlight(true);
-                    $sender->sendMessage(TextFormat::YELLOW . "§e༺§l§bＦＬＹ§r§e༻§a§l Chế Độ Fly Đã Kích Hoạt");
-                    return true;
-                }
-            }
-            else{
-                $sender->sendMessage(TextFormat::RED . "§e༺§l§bＦＬＹ§r§e༻§c§l Chế Độ Fly Đã Vô Hiệu Hóa");
-                return true;
-            }
-        }
-    }
-    public function addPlayer(Player $player) {
-        $this->players[$player->getName()] = $player->getName();
-    }
-    public function isPlayer(Player $player) {
-        return in_array($player->getName(), $this->players);
-    }
-    public function removePlayer(Player $player) {
-        unset($this->players[$player->getName()]);
-    }
+	protected function onDisable() : void{
+		foreach($this->players as $playerId => $player){
+			$allowFlightBeforePlugin = $this->flightRegistry->deactivate($playerId);
+			if($allowFlightBeforePlugin !== null){
+				$this->restoreFlight($player, $allowFlightBeforePlugin);
+			}
+		}
+		$this->players = [];
+		$this->getLogger()->info(TextFormat::RED . "Plugin Fly disabled");
+	}
+
+	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
+		if(strtolower($command->getName()) !== "fly"){
+			return false;
+		}
+		if(!$sender instanceof Player){
+			$sender->sendMessage(TextFormat::RED . "Lệnh này chỉ dùng trong game.");
+			return true;
+		}
+
+		$playerId = $sender->getUniqueId()->toString();
+		if(!$this->flightRegistry->isActive($playerId)){
+			$this->flightRegistry->activate($playerId, $sender->getAllowFlight());
+			$sender->setAllowFlight(true);
+			$this->players[$playerId] = $sender;
+			$sender->sendMessage(TextFormat::YELLOW . "§e༺§l§bＦＬＹ§r§e༻§a§l Chế Độ Fly Đã Kích Hoạt");
+			return true;
+		}
+
+		$allowFlightBeforePlugin = $this->flightRegistry->deactivate($playerId);
+		if($allowFlightBeforePlugin !== null){
+			$this->restoreFlight($sender, $allowFlightBeforePlugin);
+		}
+		unset($this->players[$playerId]);
+		$sender->sendMessage(TextFormat::YELLOW . "§e༺§l§bＦＬＹ§r§e༻§c§l Chế Độ Fly Đã Vô Hiệu Hóa");
+		return true;
+	}
+
+	public function onEntityDamageByEntity(EntityDamageByEntityEvent $event) : void{
+		if($event->isCancelled()){
+			return;
+		}
+		$damager = $event->getDamager();
+		if($damager instanceof Player && $this->flightRegistry->isActive($damager->getUniqueId()->toString())){
+			$damager->sendTip("§e༺§l§bＦＬＹ§r§e༻§l§c Vui Lòng Tắt Fly Để PvP. Cám Ơn!");
+			$event->cancel();
+		}
+	}
+
+	public function onPlayerQuit(PlayerQuitEvent $event) : void{
+		$player = $event->getPlayer();
+		$playerId = $player->getUniqueId()->toString();
+		$allowFlightBeforePlugin = $this->flightRegistry->deactivate($playerId);
+		if($allowFlightBeforePlugin !== null){
+			$this->restoreFlight($player, $allowFlightBeforePlugin);
+		}
+		unset($this->players[$playerId]);
+	}
+
+	private function restoreFlight(Player $player, bool $allowFlightBeforePlugin) : void{
+		if($allowFlightBeforePlugin){
+			$player->setAllowFlight(true);
+			return;
+		}
+		$player->setFlying(false);
+		$player->setAllowFlight(false);
+	}
 }
