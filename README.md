@@ -15,4 +15,9 @@ CI starts the generated PHAR on an isolated Axolotl-PM server and checks clean s
 
 ## Credits and distribution
 
-The manifest retains DragonPlayzMC as author and Ghast Noob's editing/Vietnamese localization credit. The repository has no LICENSE file or verified grant to redistribute a modified build. No license was added and no stable release was published.
+The manifest retains DragonPlayzMC as author and NhanAZ's editing/Vietnamese localization credit. The repository has no LICENSE file or verified grant to redistribute a modified build. No license was added and no stable release was published.
+
+
+## Credits
+
+Authors: NhanAZ, DragonPlayzMC.
