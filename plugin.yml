@@ -2,7 +2,7 @@ name: Fly
 main: Fly\Main
 api: 5.0.0
 version: 2.0.0
-author: DragonPlayzMC
+authors: ["NhanAZ", "DragonPlayzMC"]
 #Chỉnh Sửa Và Việt Hóa Bởi Ghast Noob
 commands:
  fly:
