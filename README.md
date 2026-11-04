@@ -1,6 +1,14 @@
 # Fly
 
-Fly provides the `/fly` command for players with the `fly.command` permission and blocks their attacks while the plugin-managed flight mode is active. Toggling the mode off, disconnecting, or disabling the plugin clears the in-memory mode and restores the player's previous flight permission state.
+Flight toggle with PvP restrictions for Axolotl-PM API 5.
+
+[![CI](https://github.com/NhanAZ-Plugins/Fly/actions/workflows/build.yml/badge.svg)](https://github.com/NhanAZ-Plugins/Fly/actions/workflows/build.yml)
+[![Latest release](https://img.shields.io/github/v/release/NhanAZ-Plugins/Fly)](https://github.com/NhanAZ-Plugins/Fly/releases/latest)
+[![Discord](https://img.shields.io/discord/986553214889517088?label=Discord&logo=discord&logoColor=white&color=5865F2)](https://discord.gg/j2X83ujT6c)
+
+## Overview
+
+This plugin targets the PocketMine-MP and Axolotl-PM API 5 ecosystem and is maintained under [NhanAZ-Plugins](https://github.com/NhanAZ-Plugins).
 
 ## Compatibility and validation
 
@@ -11,5 +19,3 @@ CI starts the generated PHAR on an isolated Axolotl-PM server and checks clean s
 ## Credits and distribution
 
 The manifest retains DragonPlayzMC as author and Ghast Noob's editing/Vietnamese localization credit. The repository has no LICENSE file or verified grant to redistribute a modified build. No license was added and no stable release was published.
-
-For questions about the NhanAZ ecosystem, use [NhanAZ Discord](https://discord.gg/j2X83ujT6c).
