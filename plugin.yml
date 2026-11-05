@@ -3,12 +3,11 @@ main: Fly\Main
 api: 5.0.0
 version: 2.0.0
 authors: ["NhanAZ", "DragonPlayzMC"]
-#Chỉnh Sửa Và Việt Hóa Bởi Ghast Noob
 commands:
  fly:
-  description: Cho Phép Người Chơi Bay Lượn
+  description: Allows players to fly
   permission: fly.command
 permissions:
  fly.command:
   default: op
-  description: Cho Phép Người Chơi Bay Lượn
+  description: Allows players to fly

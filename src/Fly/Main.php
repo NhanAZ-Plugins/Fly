@@ -41,7 +41,7 @@ final class Main extends PluginBase implements Listener{
 			return false;
 		}
 		if(!$sender instanceof Player){
-			$sender->sendMessage(TextFormat::RED . "Lệnh này chỉ dùng trong game.");
+			$sender->sendMessage(TextFormat::RED . "This command can only be used in-game.");
 			return true;
 		}
 
@@ -50,7 +50,7 @@ final class Main extends PluginBase implements Listener{
 			$this->flightRegistry->activate($playerId, $sender->getAllowFlight());
 			$sender->setAllowFlight(true);
 			$this->players[$playerId] = $sender;
-			$sender->sendMessage(TextFormat::YELLOW . "§e༺§l§bＦＬＹ§r§e༻§a§l Chế Độ Fly Đã Kích Hoạt");
+			$sender->sendMessage(TextFormat::GREEN . "Flight enabled.");
 			return true;
 		}
 
@@ -59,7 +59,7 @@ final class Main extends PluginBase implements Listener{
 			$this->restoreFlight($sender, $allowFlightBeforePlugin);
 		}
 		unset($this->players[$playerId]);
-		$sender->sendMessage(TextFormat::YELLOW . "§e༺§l§bＦＬＹ§r§e༻§c§l Chế Độ Fly Đã Vô Hiệu Hóa");
+		$sender->sendMessage(TextFormat::YELLOW . "Flight disabled.");
 		return true;
 	}
 
@@ -69,7 +69,7 @@ final class Main extends PluginBase implements Listener{
 		}
 		$damager = $event->getDamager();
 		if($damager instanceof Player && $this->flightRegistry->isActive($damager->getUniqueId()->toString())){
-			$damager->sendTip("§e༺§l§bＦＬＹ§r§e༻§l§c Vui Lòng Tắt Fly Để PvP. Cám Ơn!");
+			$damager->sendTip(TextFormat::RED . "Disable flight before PvP.");
 			$event->cancel();
 		}
 	}
